@@ -1,0 +1,45 @@
+# CMake
+build
+build-*
+cmake-build-*
+meson-build-*
+# CMake build artifacts
+__cmake*
+
+# Xcode
+*.xcworkspace
+*.xcodeproj
+
+# Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+.vs
+
+# Makefile
+Makefile
+*.make
+
+# nvim
+.ccls
+.ccls-cache
+.cache
+compile_commands.json
+
+# Visual Studio Code
+.vscode
+
+# IntelliJ
+.idea
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Dear ImGui
+imgui.ini
+
+# Compiled shaders
+*.spv
