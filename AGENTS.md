@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-`hellowinui` is a C++23 application that currently builds one console
-executable and prints "Hello, World!". It is a minimal starting point for
-future Windows and WinUI work.
+`hellowinui` is a C++23 WinUI 3 desktop application. It is a minimal
+Windows App SDK project whose UI is built entirely in C++, with no XAML
+files.
 
 ## Build System
 
@@ -12,6 +12,7 @@ future Windows and WinUI work.
 - **CMake minimum:** 3.21
 - **C++ standard:** C++23
 - **Project version:** 0.1.0, defined in `CMakeLists.txt`
+- **Platform:** Windows only
 
 ### Commands
 
@@ -27,25 +28,27 @@ Build:
 ninja -C build
 ```
 
-Run:
+Run from a Developer PowerShell or a configured C++ build environment:
 
-```sh
-./build/hellowinui
+```powershell
+build\\hellowinui.exe
 ```
-
-(On Windows: `build\\hellowinui.exe`.)
 
 There is currently no test suite or test target. Add tests to the build
 configuration when the project gains testable functionality.
 
 ### Dependencies and CMake Modules
 
-The project uses `fmt` for console output. It is fetched at configure time
-by `deps/Findfmt.cmake`, so the first configuration requires network access.
+The project uses `fmt` for text formatting and WinUI 3 through the Windows
+App SDK. The dependencies are fetched at configure time, so the first
+configuration requires network access. A matching Windows App Runtime 1.8
+installation is also required to run the unpackaged application.
 
 The `deps/` directory contains local CMake modules used by the build:
 
 - `Findfmt.cmake` fetches and exposes the `fmt::fmt` target.
+- `FindWinUI.cmake` fetches the Windows App SDK packages, generates C++/WinRT
+  headers from their metadata, and exposes the `WinUI::WinUI` target.
 - `Platform.cmake` detects the target platform and compiler.
 - `Flags.cmake` defines platform libraries, preprocessor definitions, and
   compiler warning options.
@@ -68,8 +71,8 @@ The project currently defines one executable target:
 
 `CMakeLists.txt` enables compile command generation, includes the platform
 and compiler flag modules from `deps/`, and applies C++23 and the shared
-warning options to the executable. Keep new targets consistent with this
-configuration.
+warning options to the WinUI executable. Keep new targets consistent with
+this configuration.
 
 ## Coding Conventions
 
@@ -79,7 +82,8 @@ configuration.
 - **Trailing return type** for function signatures (e.g. `auto fn() -> void`)
 - Opening braces go on the same line as the declaration
 - **4-space indentation**
-- **No semicolons after closing braces** for namespaces/classes
+- Do not add semicolons after namespace closing braces; class definitions
+  require a semicolon
 - `auto` for obvious types (e.g. `auto main(...) -> int`)
 
 Example:
@@ -192,7 +196,7 @@ VERSION ...)`).
 hellowinui/
   CMakeLists.txt      # Build configuration
   helloworld.cpp      # Application entry point
-  deps/               # Platform and compiler CMake modules
+  deps/               # Dependency, platform, and compiler CMake modules
   build/              # Generated build tree, not source-controlled
   AGENTS.md           # Instructions for coding agents
 ```
@@ -270,7 +274,5 @@ Strong success criteria let you loop independently. Weak criteria
 ## Platform Support
 
 `Platform.cmake` detects Windows, Linux, macOS, iOS, Android, and Emscripten.
-The current application is primarily developed on Windows, and the
-platform-specific link configuration in `Flags.cmake` may not yet support
-every detected platform. Verify a platform build before treating it as
-supported.
+The WinUI application itself is Windows-only, and `CMakeLists.txt` rejects
+non-Windows configurations.

@@ -1,42 +1,31 @@
 # hellowinui
 
-A minimal C++23 Hello World application built with CMake and Ninja.
+A minimal C++23 WinUI 3 desktop application. The UI is built entirely in
+C++, with no XAML files.
 
 ## Setup
 
 Requirements:
 
+- Windows 10 version 1809 or newer
 - CMake 3.21 or newer
 - Ninja
-- A C++23-compatible compiler
+- Visual Studio C++ build tools and a Windows SDK
+- Windows App Runtime 1.8
 
-`fmt` is fetched automatically during the first CMake configuration, so
-network access is required.
+CMake downloads the pinned Windows App SDK, C++/WinRT, WebView2 metadata,
+and `fmt` packages during the first configuration. Network access is
+required.
 
-## Build
+## Build and Run
 
-Configure the project:
+From a Developer PowerShell or a configured C++ build environment:
 
-```sh
+```powershell
 cmake -S . -B build -GNinja
-```
-
-Build the application:
-
-```sh
 ninja -C build
-```
-
-## Run
-
-On Unix-like systems:
-
-```sh
-./build/hellowinui
-```
-
-On Windows:
-
-```text
 build\hellowinui.exe
 ```
+
+The app uses unpackaged deployment, so the matching Windows App Runtime must
+be installed on the machine before running it.
