@@ -8,7 +8,7 @@ if(NOT WIN32)
     return()
 endif()
 
-set(WINUI_WINDOWS_APP_SDK_VERSION "1.8.260209005" CACHE STRING
+set(WINUI_WINDOWS_APP_SDK_VERSION "2.4.0" CACHE STRING
     "Windows App SDK version")
 set(WINUI_CPPWINRT_VERSION "2.0.250303.1" CACHE STRING
     "C++/WinRT compiler version")
@@ -62,7 +62,7 @@ file(READ "${_winui_app_sdk}/Microsoft.WindowsAppSDK.nuspec" _winui_nuspec)
 
 foreach(component IN ITEMS Foundation InteractiveExperiences WinUI Runtime)
     string(REGEX MATCH
-        "id=\"Microsoft\\.WindowsAppSDK\\.${component}\"[^>]*version=\"\\[([^]]+)\\]"
+        "id=\"Microsoft\\.WindowsAppSDK\\.${component}\"[^>]*version=\"[^\"]+\""
         _component_match
         "${_winui_nuspec}"
     )
@@ -71,7 +71,16 @@ foreach(component IN ITEMS Foundation InteractiveExperiences WinUI Runtime)
             "Could not find the ${component} package version in "
             "Microsoft.WindowsAppSDK ${WINUI_WINDOWS_APP_SDK_VERSION}")
     endif()
-    set(_winui_${component}_version "${CMAKE_MATCH_1}")
+
+    string(REGEX MATCH "version=\"(\\[[^]]+\\]|[^\"]+)\""
+        _component_version_match
+        "${_component_match}")
+    set(_component_version "${CMAKE_MATCH_1}")
+    string(REGEX REPLACE "^\\[" "" _component_version
+        "${_component_version}")
+    string(REGEX REPLACE "\\]$" "" _component_version
+        "${_component_version}")
+    set(_winui_${component}_version "${_component_version}")
 endforeach()
 
 _winui_download_package(

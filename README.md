@@ -11,7 +11,7 @@ Requirements:
 - CMake 3.21 or newer
 - Ninja
 - Visual Studio C++ build tools and a Windows SDK
-- Windows App Runtime 1.8
+- Windows App Runtime 2.4
 
 CMake downloads the pinned Windows App SDK, C++/WinRT, WebView2 metadata,
 and `fmt` packages during the first configuration. Network access is
@@ -27,5 +27,5 @@ ninja -C build
 build\hellowinui.exe
 ```
 
-The app uses unpackaged deployment, so the matching Windows App Runtime must
-be installed on the machine before running it.
+The app uses unpackaged deployment, so the matching Windows App Runtime 2.4
+must be installed on the machine before running it.

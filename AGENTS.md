@@ -41,7 +41,7 @@ configuration when the project gains testable functionality.
 
 The project uses `fmt` for text formatting and WinUI 3 through the Windows
 App SDK. The dependencies are fetched at configure time, so the first
-configuration requires network access. A matching Windows App Runtime 1.8
+configuration requires network access. A matching Windows App Runtime 2.4
 installation is also required to run the unpackaged application.
 
 The `deps/` directory contains local CMake modules used by the build:
