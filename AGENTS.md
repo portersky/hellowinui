@@ -196,6 +196,7 @@ VERSION ...)`).
 hellowinui/
   CMakeLists.txt      # Build configuration
   helloworld.cpp      # Application entry point
+  wui/                # Header-only declarative WinUI helpers (wui.hpp)
   deps/               # Dependency, platform, and compiler CMake modules
   build/              # Generated build tree, not source-controlled
   AGENTS.md           # Instructions for coding agents

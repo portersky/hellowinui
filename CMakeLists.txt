@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(hellowinui VERSION 0.2.1)
+project(hellowinui VERSION 0.3.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -35,4 +35,25 @@ add_custom_command(TARGET hellowinui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${WINUI_BOOTSTRAP_DLL}"
         "$<TARGET_FILE_DIR:hellowinui>"
+)
+
+# Full-featured layout demo built on the same wui helpers.
+add_executable(winuiex WIN32 "winuiex.cpp")
+target_include_directories(winuiex PRIVATE ".")
+target_compile_features(winuiex PRIVATE cxx_std_23)
+target_compile_options(winuiex PRIVATE ${BASE_OPTIONS})
+target_compile_definitions(winuiex PRIVATE
+    ${BASE_DEFINITIONS}
+    UNICODE
+    _UNICODE
+    WIN32_LEAN_AND_MEAN
+    NOMINMAX
+    WINDOWSAPPSDK_RELEASE_MAJORMINOR=${WINUI_RELEASE_MAJOR_MINOR}
+)
+target_link_libraries(winuiex PRIVATE ${BASE_LIBRARIES} fmt::fmt WinUI::WinUI)
+
+add_custom_command(TARGET winuiex POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${WINUI_BOOTSTRAP_DLL}"
+        "$<TARGET_FILE_DIR:winuiex>"
 )
