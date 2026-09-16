@@ -759,6 +759,11 @@ auto info(std::wstring_view title, std::wstring_view message) -> element {
 
 // --- Window helpers ---
 
+// Application resources, for theme lookups like CardBackground...Brush.
+inline auto resources() -> xaml::ResourceDictionary {
+    return xaml::Application::Current().Resources();
+}
+
 // Keep the DWM title bar in sync with the app theme. Call once after
 // window.Content is set; the HWND may not exist until Activate().
 inline auto sync_title_bar(xaml::Window const& win) -> void {

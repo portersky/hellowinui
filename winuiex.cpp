@@ -1,72 +1,9 @@
-#include <windows.h>
-#include <dwmapi.h>
-
-#undef GetCurrentTime
-
-#include "MddBootstrap.h"
-#include "winrt/Microsoft.UI.Text.h"
-#include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
-#include "winrt/Microsoft.UI.Xaml.Controls.h"
-#include "winrt/Microsoft.UI.Xaml.Input.h"
-#include "winrt/Microsoft.UI.Xaml.Media.h"
-#include "winrt/Microsoft.UI.Xaml.Markup.h"
-#include "winrt/Microsoft.UI.Xaml.h"
-#include "winrt/Microsoft.UI.Xaml.XamlTypeInfo.h"
-#include "winrt/Windows.Foundation.Collections.h"
-#include "winrt/Windows.Graphics.h"
-#include "winrt/Windows.UI.Xaml.Interop.h"
-#include "winrt/Microsoft.UI.Windowing.h"
-#include "winrt/base.h"
-#include "fmt/format.h"
-
 #include "wui/wui.hpp"
 
-namespace xaml = winrt::Microsoft::UI::Xaml;
-namespace controls = winrt::Microsoft::UI::Xaml::Controls;
-namespace markup = winrt::Microsoft::UI::Xaml::Markup;
-namespace xaml_type_info = winrt::Microsoft::UI::Xaml::XamlTypeInfo;
-namespace interop = winrt::Windows::UI::Xaml::Interop;
+using namespace wui;
 
-namespace {
-struct hwnd_search {
-    DWORD m_pid;
-    HWND m_hwnd;
-};
-
-auto WINAPI enum_windows_callback(HWND hwnd, LPARAM lparam) -> BOOL {
-    auto* search = reinterpret_cast<hwnd_search*>(lparam);
-    auto pid = DWORD{};
-    GetWindowThreadProcessId(hwnd, &pid);
-    if (pid == search->m_pid) {
-        search->m_hwnd = hwnd;
-        return FALSE;
-    }
-    return TRUE;
-}
-
-auto find_main_window() -> HWND {
-    hwnd_search search{GetCurrentProcessId(), nullptr};
-    EnumWindows(enum_windows_callback, reinterpret_cast<LPARAM>(&search));
-    return search.m_hwnd;
-}
-
-auto apply_title_bar_theme(HWND hwnd, bool const dark) -> void {
-    auto const value = dark ? TRUE : FALSE;
-    DwmSetWindowAttribute(
-        hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
-}
-}
-
-class app : public xaml::ApplicationT<app, markup::IXamlMetadataProvider> {
-public:
-    auto OnLaunched(xaml::LaunchActivatedEventArgs const&) -> void {
-        m_window = xaml::Window();
-
-        Resources().MergedDictionaries().Append(controls::XamlControlsResources{});
-        m_window.SystemBackdrop(xaml::Media::MicaBackdrop{});
-
-        using namespace wui;
-
+auto WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) -> int {
+    return run(940, 608, [](window& win) {
         auto info_bar = info(L"Title", L"Lorem ipsum dolor sit amet").row(0);
         auto info_action = btn(L"Text");
         info_bar.as<controls::InfoBar>().ActionButton(
@@ -78,7 +15,7 @@ public:
                                      info_bar.as<controls::InfoBar>()
                                          .Message(L"The button was pressed.");
                                  })
-                             .style(Resources()
+                             .style(resources()
                                         .Lookup(winrt::box_value(
                                             L"AccentButtonStyle"))
                                         .as<xaml::Style>());
@@ -232,98 +169,38 @@ public:
                         .child(info_bar)
                         .child(content);
 
-        m_window.Content(root.m_el);
-        m_window.Title(L"hellowinui");
-        m_window.AppWindow().Resize(
-            winrt::Windows::Graphics::SizeInt32{940, 608});
+        win.Content(root.m_el);
+        win.Title(L"hellowinui");
 
-        auto const card_background = Resources()
+        auto const card_background = resources()
                                           .Lookup(winrt::box_value(
                                               L"CardBackgroundFillColorDefaultBrush"))
-                                          .as<xaml::Media::Brush>();
-        auto const card_stroke = Resources()
+                                          .as<media::Brush>();
+        auto const card_stroke = resources()
                                      .Lookup(winrt::box_value(
                                          L"CardStrokeColorDefaultBrush"))
-                                     .as<xaml::Media::Brush>();
+                                     .as<media::Brush>();
         main_card.bg(card_background).border_color(card_stroke);
         media_bar.bg(card_background).border_color(card_stroke);
 
         root.m_el.ActualThemeChanged([main_card, media_bar](
-                                        xaml::FrameworkElement const& sender,
+                                        xaml::FrameworkElement const&,
                                         winrt::Windows::Foundation::IInspectable const&) {
             // Non-const copies so the handle modifiers can be chained.
             auto card = main_card;
             auto bar = media_bar;
 
-            auto const resources = xaml::Application::Current().Resources();
-            auto const background = resources
-                                        .Lookup(winrt::box_value(
-                                            L"CardBackgroundFillColorDefaultBrush"))
-                                        .as<xaml::Media::Brush>();
-            auto const stroke = resources
+            auto const theme = resources();
+            auto const background = theme
+                                       .Lookup(winrt::box_value(
+                                           L"CardBackgroundFillColorDefaultBrush"))
+                                       .as<media::Brush>();
+            auto const stroke = theme
                                     .Lookup(winrt::box_value(
                                         L"CardStrokeColorDefaultBrush"))
-                                    .as<xaml::Media::Brush>();
+                                    .as<media::Brush>();
             card.bg(background).border_color(stroke);
             bar.bg(background).border_color(stroke);
-
-            auto const hwnd = find_main_window();
-            if (hwnd) {
-                apply_title_bar_theme(
-                    hwnd, sender.ActualTheme() == xaml::ElementTheme::Dark);
-            }
         });
-
-        m_window.Activated([root](
-            winrt::Windows::Foundation::IInspectable const&,
-            xaml::WindowActivatedEventArgs const&) {
-            auto const hwnd = find_main_window();
-            if (hwnd) {
-                apply_title_bar_theme(
-                    hwnd,
-                    root.m_el.ActualTheme() == xaml::ElementTheme::Dark);
-            }
-        });
-
-        auto const hwnd = find_main_window();
-        if (hwnd) {
-            apply_title_bar_theme(
-                hwnd, root.m_el.ActualTheme() == xaml::ElementTheme::Dark);
-        }
-
-        m_window.Activate();
-    }
-
-    auto GetXamlType(interop::TypeName const& type) -> markup::IXamlType {
-        return m_provider.GetXamlType(type);
-    }
-
-    auto GetXamlType(winrt::hstring const& full_name) -> markup::IXamlType {
-        return m_provider.GetXamlType(full_name);
-    }
-
-    auto GetXmlnsDefinitions() -> winrt::com_array<markup::XmlnsDefinition> {
-        return m_provider.GetXmlnsDefinitions();
-    }
-
-private:
-    xaml::Window m_window{nullptr};
-    xaml_type_info::XamlControlsXamlMetaDataProvider m_provider;
-};
-
-auto WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) -> int {
-    winrt::init_apartment(winrt::apartment_type::single_threaded);
-
-    auto const result = MddBootstrapInitialize2(
-        WINDOWSAPPSDK_RELEASE_MAJORMINOR,
-        nullptr,
-        PACKAGE_VERSION{},
-        MddBootstrapInitializeOptions_OnNoMatch_ShowUI);
-    if (FAILED(result)) {
-        return result;
-    }
-
-    xaml::Application::Start([](auto&&) { winrt::make<app>(); });
-    MddBootstrapShutdown();
-    return 0;
+    });
 }

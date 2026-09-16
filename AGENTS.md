@@ -31,7 +31,7 @@ ninja -C build
 Run from a Developer PowerShell or a configured C++ build environment:
 
 ```powershell
-build\\hellowinui.exe
+build\hellowinui.exe
 ```
 
 There is currently no test suite or test target. Add tests to the build
@@ -196,6 +196,7 @@ VERSION ...)`).
 hellowinui/
   CMakeLists.txt      # Build configuration
   helloworld.cpp      # Application entry point
+  winuiex.cpp         # Full-featured layout demo
   wui/                # Header-only declarative WinUI helpers (wui.hpp)
   deps/               # Dependency, platform, and compiler CMake modules
   build/              # Generated build tree, not source-controlled
