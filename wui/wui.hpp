@@ -561,6 +561,33 @@ struct element {
         return *this;
     }
 
+    // -- events --
+
+    // Fires whenever this element's rendered size changes, with the new
+    // width and height in device-independent pixels. Nested SizeChanged
+    // events fired while the callback is running (e.g. by tree mutations
+    // it performs) are skipped to avoid reentrant layout changes.
+    auto on_resize(std::function<void(f64, f64)> fn) -> element& {
+        // Fires with the element's new DIP size during the layout pass,
+        // so handlers must only change properties (text, colors, Grid
+        // placement); moving children or swapping content from here
+        // corrupts the visual tree. The guard drops nested events: a
+        // handler that resizes something can re-enter SizeChanged before
+        // it returns.
+        auto* in_flight = new bool(false);
+        m_el.SizeChanged([fn, in_flight](
+                             winrt::Windows::Foundation::IInspectable const&,
+                             xaml::SizeChangedEventArgs const& e) {
+            if (*in_flight) return;
+            *in_flight = true;
+            auto w = e.NewSize().Width;
+            auto h = e.NewSize().Height;
+            fn(w, h);
+            *in_flight = false;
+        });
+        return *this;
+    }
+
     // -- grid placement and definitions --
 
     auto row(i32 v) -> element& { m_row = v; return *this; }

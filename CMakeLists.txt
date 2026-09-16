@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(hellowinui VERSION 0.3.1)
+project(hellowinui VERSION 0.3.2)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -56,4 +56,25 @@ add_custom_command(TARGET winuiex POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${WINUI_BOOTSTRAP_DLL}"
         "$<TARGET_FILE_DIR:winuiex>"
+)
+
+# Responsive breakpoint demo built on the same wui helpers.
+add_executable(reactive WIN32 "reactive.cpp")
+target_include_directories(reactive PRIVATE ".")
+target_compile_features(reactive PRIVATE cxx_std_23)
+target_compile_options(reactive PRIVATE ${BASE_OPTIONS})
+target_compile_definitions(reactive PRIVATE
+    ${BASE_DEFINITIONS}
+    UNICODE
+    _UNICODE
+    WIN32_LEAN_AND_MEAN
+    NOMINMAX
+    WINDOWSAPPSDK_RELEASE_MAJORMINOR=${WINUI_RELEASE_MAJOR_MINOR}
+)
+target_link_libraries(reactive PRIVATE ${BASE_LIBRARIES} fmt::fmt WinUI::WinUI)
+
+add_custom_command(TARGET reactive POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${WINUI_BOOTSTRAP_DLL}"
+        "$<TARGET_FILE_DIR:reactive>"
 )

@@ -197,6 +197,7 @@ hellowinui/
   CMakeLists.txt      # Build configuration
   helloworld.cpp      # Application entry point
   winuiex.cpp         # Full-featured layout demo
+  reactive.cpp        # Responsive breakpoint demo
   wui/                # Header-only declarative WinUI helpers (wui.hpp)
   deps/               # Dependency, platform, and compiler CMake modules
   build/              # Generated build tree, not source-controlled
