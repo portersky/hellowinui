@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(hellowinui VERSION 0.2.0)
+project(hellowinui VERSION 0.2.1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -29,7 +29,7 @@ target_compile_definitions(hellowinui PRIVATE
     NOMINMAX
     WINDOWSAPPSDK_RELEASE_MAJORMINOR=${WINUI_RELEASE_MAJOR_MINOR}
 )
-target_link_libraries(hellowinui PRIVATE fmt::fmt WinUI::WinUI)
+target_link_libraries(hellowinui PRIVATE ${BASE_LIBRARIES} fmt::fmt WinUI::WinUI)
 
 add_custom_command(TARGET hellowinui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

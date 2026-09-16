@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <dwmapi.h>
 
 #undef GetCurrentTime
 
@@ -23,6 +24,36 @@ namespace controls = winrt::Microsoft::UI::Xaml::Controls;
 namespace markup = winrt::Microsoft::UI::Xaml::Markup;
 namespace xaml_type_info = winrt::Microsoft::UI::Xaml::XamlTypeInfo;
 namespace interop = winrt::Windows::UI::Xaml::Interop;
+
+namespace {
+struct hwnd_search {
+    DWORD m_pid;
+    HWND m_hwnd;
+};
+
+auto WINAPI enum_windows_callback(HWND hwnd, LPARAM lparam) -> BOOL {
+    auto* search = reinterpret_cast<hwnd_search*>(lparam);
+    auto pid = DWORD{};
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (pid == search->m_pid) {
+        search->m_hwnd = hwnd;
+        return FALSE;
+    }
+    return TRUE;
+}
+
+auto find_main_window() -> HWND {
+    hwnd_search search{GetCurrentProcessId(), nullptr};
+    EnumWindows(enum_windows_callback, reinterpret_cast<LPARAM>(&search));
+    return search.m_hwnd;
+}
+
+auto apply_title_bar_theme(HWND hwnd, bool const dark) -> void {
+    auto const value = dark ? TRUE : FALSE;
+    DwmSetWindowAttribute(
+        hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+}
+}
 
 class app : public xaml::ApplicationT<app, markup::IXamlMetadataProvider> {
 public:
@@ -362,7 +393,7 @@ public:
         media_bar.BorderBrush(card_stroke);
 
         root.ActualThemeChanged([card, media_bar](
-                                    xaml::FrameworkElement const&,
+                                    xaml::FrameworkElement const& sender,
                                     winrt::Windows::Foundation::IInspectable const&) {
             auto const resources = xaml::Application::Current().Resources();
             auto const background = resources
@@ -377,7 +408,29 @@ public:
             card.BorderBrush(stroke);
             media_bar.Background(background);
             media_bar.BorderBrush(stroke);
+
+            auto const hwnd = find_main_window();
+            if (hwnd) {
+                apply_title_bar_theme(
+                    hwnd, sender.ActualTheme() == xaml::ElementTheme::Dark);
+            }
         });
+
+        m_window.Activated([root](
+            winrt::Windows::Foundation::IInspectable const&,
+            xaml::WindowActivatedEventArgs const&) {
+            auto const hwnd = find_main_window();
+            if (hwnd) {
+                apply_title_bar_theme(
+                    hwnd, root.ActualTheme() == xaml::ElementTheme::Dark);
+            }
+        });
+
+        auto const hwnd = find_main_window();
+        if (hwnd) {
+            apply_title_bar_theme(
+                hwnd, root.ActualTheme() == xaml::ElementTheme::Dark);
+        }
 
         m_window.Activate();
     }
